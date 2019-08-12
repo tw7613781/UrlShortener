@@ -13,7 +13,7 @@ build:
 clean: 
 	$(GOCLEAN)
 	rm -rf $(BINARY_FOLDER)
-	rm -f *.gob
+	rm -f *.json
 	
 run:
 	$(GOBUILD) -o $(BINARY_FOLDER)/$(BINARY_NAME) -v

@@ -4,14 +4,16 @@ import (
 	"sync"
 	"os"
 	"log"
-	"encoding/gob"
+	"encoding/json"
 	"io"
 )
+
+const saveQueueLength =  1000
 
 type URLStore struct {
 	urls map[string]string
 	mu sync.RWMutex
-	file *os.File
+	save chan record
 }
 
 type record struct {
@@ -19,15 +21,14 @@ type record struct {
 }
 
 func NewURLStore(filename string) *URLStore{
-	s := &URLStore{ urls: make(map[string]string)}
-	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		log.Fatal("URLStore:", err)
+	s := &URLStore{ 
+		urls: make(map[string]string),
+		save: make(chan record, saveQueueLength),	
 	}
-	s.file = f
-	if err := s.load(); err != nil {
+	if err := s.load(filename); err != nil {
 		log.Println("Error loading data in URLStore:", err)
 	}
+	go s.saveLoop(filename)
 	return s
 }
 
@@ -60,25 +61,37 @@ func (s *URLStore) Put(url string) string {
 	for {
 		key := genKey(s.count())
 		if s.set(key, url) {
-			if err := s.save(key, url); err != nil {
-				log.Println("error saving to RULStore:", err)
-			}
+			s.save <- record{key, url}
 			return key
 		}
 	}
 }
 
-func (s *URLStore) save(key, url string) error {
-	e := gob.NewEncoder(s.file)
-	return e.Encode(record{key, url})
+func (s *URLStore) saveLoop(filename string) {
+	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal("URLStore:", err)
+	}
+	defer f.Close()
+	e := json.NewEncoder(f)
+	for {
+		r := <- s.save
+		if err := e.Encode(r); err != nil {
+			log.Println("URLStore:", err)
+		}
+	}
 }
 
-func (s *URLStore) load() error {
-	if _, err := s.file.Seek(0, 0); err != nil {
+func (s *URLStore) load(filename string) error {
+	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal("URLStore:", err)
+	}
+	defer f.Close()
+	if _, err := f.Seek(0, 0); err != nil {
 		return err
 	}
-	d := gob.NewDecoder(s.file)
-	var err error
+	d := json.NewDecoder(f)
 	for err == nil {
 		var r record
 		if err = d.Decode(&r); err == nil {

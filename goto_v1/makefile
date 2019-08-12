@@ -16,4 +16,4 @@ clean:
 	
 run:
 	$(GOBUILD) -o $(BINARY_NAME) -v
-	./$(BINARY_NAME)
+	./$(BINARY_FOLDER)/$(BINARY_NAME)

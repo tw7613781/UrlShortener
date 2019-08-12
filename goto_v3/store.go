@@ -17,7 +17,7 @@ type URLStore struct {
 }
 
 type record struct {
-	key, URL string
+	Key, URL string
 }
 
 func NewURLStore(filename string) *URLStore{
@@ -95,7 +95,7 @@ func (s *URLStore) load(filename string) error {
 	for err == nil {
 		var r record
 		if err = d.Decode(&r); err == nil {
-			s.set(r.key, r.URL)
+			s.set(r.Key, r.URL)
 		}
 	}
 	if err == io.EOF {

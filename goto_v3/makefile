@@ -12,8 +12,9 @@ build:
 
 clean: 
 	$(GOCLEAN)
-	rm -f $(BINARY_NAME)
+	rm -rf $(BINARY_FOLDER)
+	rm -f *.gob
 	
 run:
-	$(GOBUILD) -o $(BINARY_NAME) -v
-	./$(BINARY_NAME)
+	$(GOBUILD) -o $(BINARY_FOLDER)/$(BINARY_NAME) -v
+	./$(BINARY_FOLDER)/$(BINARY_NAME)
