@@ -1,6 +1,6 @@
 # UrlShortener
 
-It's a exercise project for book **The Way To Go**
+It's a exercise project for book *The Way To Go*
 
 ## It has two main functions:    
 
@@ -26,3 +26,5 @@ What to change if we want a json-version?
 
 ### Version 5   
 A distributed version is made with the rpc protocol.
+
+## [A study note regarding to the project](https://github.com/tw7613781/UrlShortener/blob/master/study_note.md)
